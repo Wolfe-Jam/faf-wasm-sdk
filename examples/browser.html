@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FAF WASM SDK - Browser Demo</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem;
+      background: #0a0a0a;
+      color: #e0e0e0;
+    }
+    h1 { color: #00D4D4; }
+    textarea {
+      width: 100%;
+      height: 300px;
+      background: #1a1a1a;
+      color: #e0e0e0;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 1rem;
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 14px;
+    }
+    button {
+      background: #00D4D4;
+      color: #0a0a0a;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      margin: 1rem 0;
+    }
+    button:hover { background: #00ffff; }
+    #result {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 1rem;
+      white-space: pre-wrap;
+      font-family: 'Monaco', 'Menlo', monospace;
+    }
+    .score { font-size: 2rem; margin: 1rem 0; }
+    .tier { font-size: 3rem; }
+    .drop-zone {
+      border: 2px dashed #00D4D4;
+      border-radius: 8px;
+      padding: 2rem;
+      text-align: center;
+      margin-bottom: 1rem;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    .drop-zone:hover, .drop-zone.drag-over {
+      background: rgba(0, 212, 212, 0.1);
+      border-color: #00ffff;
+    }
+    .drop-zone.drag-over {
+      transform: scale(1.02);
+    }
+    .drop-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+    .file-name { color: #00D4D4; font-weight: bold; margin-top: 0.5rem; }
+  </style>
+</head>
+<body>
+  <h1>FAF WASM SDK Demo</h1>
+
+  <div class="drop-zone" id="drop-zone">
+    <div class="drop-icon">Drop .faf file here</div>
+    <div>or click to browse</div>
+    <div class="file-name" id="file-name"></div>
+    <input type="file" id="file-input" accept=".faf,.yaml,.yml" style="display: none;">
+  </div>
+
+  <p>Or paste content directly:</p>
+
+  <textarea id="faf-input">project:
+  name: my-project
+  description: A sample project
+  stack: typescript
+  version: 1.0.0
+  mission: Build amazing software
+
+instructions:
+  ai_context:
+    - Follow TypeScript best practices
+    - Use functional programming patterns
+  build:
+    commands:
+      - npm install
+      - npm run build
+    test: npm test
+
+context:
+  key_files:
+    - src/index.ts
+    - package.json
+  dependencies:
+    - typescript
+    - vitest
+
+metadata:
+  faf_version: "2.8.0"
+  author: developer
+  license: MIT</textarea>
+
+  <button onclick="scoreFAF()">Score FAF</button>
+  <button onclick="clearAll()" style="background: #333; color: #e0e0e0;">Clear</button>
+  <button onclick="shareOnX()" style="background: #000; color: #fff; border: 1px solid #333;">Share on X</button>
+
+  <div id="result"></div>
+
+  <script type="module">
+    import init, { FAF } from '../pkg/faf_wasm_sdk.js';
+
+    let fafModule;
+
+    async function initWasm() {
+      await init();
+      fafModule = true;
+      console.log('FAF WASM SDK initialized');
+    }
+
+    window.clearAll = function() {
+      document.getElementById('faf-input').value = '';
+      document.getElementById('result').innerHTML = '';
+      document.getElementById('file-name').textContent = '';
+    };
+
+    let lastScore = null;
+
+    window.shareOnX = function() {
+      if (!lastScore) {
+        alert('Score a .faf file first!');
+        return;
+      }
+      const text = `My .faf scored ${lastScore.tier} ${lastScore.weighted.toFixed(1)}% AI-readiness!
+
+Breakdown (Elon Weights):
+- Completeness: ${lastScore.completeness.toFixed(0)}%
+- Clarity: ${lastScore.clarity.toFixed(0)}%
+- Structure: ${lastScore.structure.toFixed(0)}%
+- Metadata: ${lastScore.metadata.toFixed(0)}%
+
+Score yours: https://faf.one
+
+#FAF #AIContext @wolfejam`;
+      const url = `https://x.com/intent/tweet?text=${encodeURIComponent(text)}`;
+      window.open(url, '_blank');
+    };
+
+    window.scoreFAF = function() {
+      if (!fafModule) {
+        document.getElementById('result').textContent = 'Loading WASM...';
+        return;
+      }
+
+      const input = document.getElementById('faf-input').value;
+      const start = performance.now();
+
+      try {
+        const faf = new FAF(input);
+        const elapsed = (performance.now() - start).toFixed(2);
+
+        lastScore = {
+          tier: faf.tier,
+          weighted: faf.weighted_score,
+          truth: faf.truth_score,
+          completeness: faf.completeness,
+          clarity: faf.clarity,
+          structure: faf.structure,
+          metadata: faf.metadata,
+          mk3_score: faf.mk3_score,
+          mk3_tier: faf.mk3_tier,
+          mk3_filled: faf.mk3_filled,
+          mk3_total: faf.mk3_total,
+          name: faf.name,
+          stack: faf.stack
+        };
+
+        document.getElementById('result').innerHTML = `
+<div style="display: flex; gap: 2rem; align-items: center;">
+  <div>
+    <div style="font-size: 0.8rem; color: #888;">Mk3 Score</div>
+    <div class="tier">${faf.mk3_tier}</div>
+    <div class="score">${faf.mk3_score.toFixed(0)}%</div>
+  </div>
+  <div>
+    <div style="font-size: 0.8rem; color: #888;">Elon Weights</div>
+    <div class="tier">${faf.tier}</div>
+    <div class="score">${faf.weighted_score.toFixed(1)}%</div>
+  </div>
+</div>
+
+<strong>Elon Weights Breakdown:</strong>
+  Completeness: ${faf.completeness.toFixed(1)}% (40% weight)
+  Clarity:      ${faf.clarity.toFixed(1)}% (35% weight)
+  Structure:    ${faf.structure.toFixed(1)}% (15% weight)
+  Metadata:     ${faf.metadata.toFixed(1)}% (10% weight)
+
+<strong>Project:</strong> ${faf.name || 'N/A'}
+<strong>Stack:</strong> ${faf.stack || 'N/A'}
+
+<strong>Performance:</strong> ${elapsed}ms parse + score
+        `;
+      } catch (e) {
+        document.getElementById('result').textContent = `Error: ${e}`;
+      }
+    };
+
+    // File drop handling
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    const fileName = document.getElementById('file-name');
+    const textarea = document.getElementById('faf-input');
+
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('drag-over');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('drag-over');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('drag-over');
+      const file = e.dataTransfer.files[0];
+      if (file) handleFile(file);
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) handleFile(file);
+    });
+
+    function handleFile(file) {
+      fileName.textContent = file.name;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        textarea.value = e.target.result;
+        scoreFAF();
+      };
+      reader.readAsText(file);
+    }
+
+    initWasm();
+  </script>
+</body>
+</html>

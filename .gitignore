@@ -1,0 +1,21 @@
+# Build outputs
+/target/
+/pkg/
+*.wasm
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/
+*.log
+
+# Wrangler
+.wrangler/

@@ -1,0 +1,7 @@
+name = "faf-edge-mcp"
+main = "examples/edge-worker.js"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+[build]
+command = "wasm-pack build --target web --release"

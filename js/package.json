@@ -1,0 +1,35 @@
+{
+  "name": "@faf/wasm-sdk",
+  "version": "1.0.0",
+  "description": "FAF WASM SDK - AI context format for browsers and edge compute",
+  "type": "module",
+  "main": "index.js",
+  "files": [
+    "index.js",
+    "../pkg/*"
+  ],
+  "exports": {
+    ".": {
+      "import": "./index.js",
+      "types": "./index.d.ts"
+    }
+  },
+  "keywords": [
+    "faf",
+    "ai-context",
+    "wasm",
+    "cloudflare-workers",
+    "edge-compute",
+    "mcp"
+  ],
+  "author": "wolfejam <wolfejam@faf.one>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/faf-foundation/faf-wasm-sdk"
+  },
+  "bugs": {
+    "url": "https://github.com/faf-foundation/faf-wasm-sdk/issues"
+  },
+  "homepage": "https://faf.one"
+}

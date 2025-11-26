@@ -1,0 +1,31 @@
+[package]
+name = "faf-wasm-sdk"
+version = "1.0.0"
+edition = "2021"
+authors = ["wolfejam <wolfejam@faf.one>"]
+description = "FAF WASM SDK - AI context format for browsers and edge compute"
+license = "MIT"
+repository = "https://github.com/faf-foundation/faf-wasm-sdk"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+wasm-bindgen = "0.2"
+serde = { version = "1.0", features = ["derive"] }
+serde_yaml = "0.9"
+serde_json = "1.0"
+serde-wasm-bindgen = "0.6"
+js-sys = "0.3"
+thiserror = "1.0"
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3"
+
+[profile.release]
+opt-level = "s"        # Optimize for size
+lto = true             # Link-time optimization
+codegen-units = 1      # Better optimization
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = ["-Os"]     # Optimize WASM binary size
