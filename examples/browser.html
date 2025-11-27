@@ -118,6 +118,11 @@ metadata:
   <script type="module">
     import init, { FAF } from '../pkg/faf_wasm_sdk.js';
 
+    // ELON WEIGHTS VISIBILITY FLAG
+    // Set to true ONLY with agreement from Elon
+    // Default: false (hidden in FAF version)
+    const SHOW_ELON_WEIGHTS = false;
+
     let fafModule;
 
     async function initWasm() {
@@ -139,13 +144,7 @@ metadata:
         alert('Score a .faf file first!');
         return;
       }
-      const text = `My .faf scored ${lastScore.tier} ${lastScore.weighted.toFixed(1)}% AI-readiness!
-
-Breakdown (Elon Weights):
-- Completeness: ${lastScore.completeness.toFixed(0)}%
-- Clarity: ${lastScore.clarity.toFixed(0)}%
-- Structure: ${lastScore.structure.toFixed(0)}%
-- Metadata: ${lastScore.metadata.toFixed(0)}%
+      const text = `My .faf scored ${lastScore.mk3_tier} ${lastScore.mk3_score.toFixed(0)}% AI-readiness!
 
 Score yours: https://faf.one
 
@@ -183,31 +182,45 @@ Score yours: https://faf.one
           stack: faf.stack
         };
 
-        document.getElementById('result').innerHTML = `
+        // Build result HTML - FAF Score always shown, Elon Weights conditional
+        let resultHtml = `
 <div style="display: flex; gap: 2rem; align-items: center;">
   <div>
-    <div style="font-size: 0.8rem; color: #888;">Mk3 Score</div>
+    <div style="font-size: 0.8rem; color: #888;">FAF Score</div>
     <div class="tier">${faf.mk3_tier}</div>
     <div class="score">${faf.mk3_score.toFixed(0)}%</div>
-  </div>
+  </div>`;
+
+        if (SHOW_ELON_WEIGHTS) {
+          resultHtml += `
   <div>
     <div style="font-size: 0.8rem; color: #888;">Elon Weights</div>
     <div class="tier">${faf.tier}</div>
     <div class="score">${faf.weighted_score.toFixed(1)}%</div>
-  </div>
-</div>
+  </div>`;
+        }
+
+        resultHtml += `
+</div>`;
+
+        if (SHOW_ELON_WEIGHTS) {
+          resultHtml += `
 
 <strong>Elon Weights Breakdown:</strong>
   Completeness: ${faf.completeness.toFixed(1)}% (40% weight)
   Clarity:      ${faf.clarity.toFixed(1)}% (35% weight)
   Structure:    ${faf.structure.toFixed(1)}% (15% weight)
-  Metadata:     ${faf.metadata.toFixed(1)}% (10% weight)
+  Metadata:     ${faf.metadata.toFixed(1)}% (10% weight)`;
+        }
+
+        resultHtml += `
 
 <strong>Project:</strong> ${faf.name || 'N/A'}
 <strong>Stack:</strong> ${faf.stack || 'N/A'}
 
-<strong>Performance:</strong> ${elapsed}ms parse + score
-        `;
+<strong>Performance:</strong> ${elapsed}ms parse + score`;
+
+        document.getElementById('result').innerHTML = resultHtml;
       } catch (e) {
         document.getElementById('result').textContent = `Error: ${e}`;
       }
