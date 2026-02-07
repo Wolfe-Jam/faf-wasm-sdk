@@ -179,7 +179,7 @@ impl FAF {
 
     /// Get version
     pub fn version() -> String {
-        "1.0.1".to_string()
+        "1.2.0".to_string()
     }
 }
 
@@ -253,7 +253,7 @@ pub fn score_faf(yaml_content: String) -> Result<String, JsValue> {
 /// Get SDK version
 #[wasm_bindgen]
 pub fn sdk_version() -> String {
-    "1.0.1".to_string()
+    "1.2.0".to_string()
 }
 
 // =============================================================================

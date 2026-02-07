@@ -1,0 +1,36 @@
+FAF Foundation License v1.0
+
+Copyright (c) 2025 FAF Foundation
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to use,
+copy, modify, and distribute the Software for the following purposes:
+
+PERMITTED USES:
+- Personal projects
+- Hobby and learning
+- Development and prototyping
+- Internal company tools (not offered as a service)
+- Open source projects (with this same license)
+
+COMMERCIAL LICENSE REQUIRED FOR:
+- Offering FAF scoring as a hosted service
+- Reselling or redistributing FAF validation capabilities
+- Embedding in commercial products sold to third parties
+- Any use that competes with FAF Foundation services
+
+For commercial licensing, contact: team@faf.one
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+FAF Foundation
+https://faf.one
+IANA Registered: application/vnd.faf+yaml

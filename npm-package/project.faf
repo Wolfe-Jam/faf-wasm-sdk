@@ -1,0 +1,69 @@
+project:
+  name: faf-wasm
+  description: FAF WASM SDK - Score .faf files in browser and Node.js in under 5ms
+  version: 1.0.0
+  goal: Universal .faf scoring via WebAssembly for browser and Node.js
+  main_language: rust
+stack:
+  languages:
+    - rust
+    - javascript
+    - typescript
+  frameworks:
+    - wasm-bindgen
+    - wasm-pack
+  key_dependencies:
+    - serde_yaml
+    - serde_json
+  targetUser: developers
+  coreProblem: understanding project
+  missionPurpose: project documentation
+  packageManager: npm/yarn/pnpm
+  mainLanguage: JavaScript/TypeScript
+  buildTool: cargo
+instructions:
+  ai_first:
+    - Score .faf files using Mk3 slot-based algorithm
+    - Returns score percentage (0-100) and tier emoji
+    - WASM binary runs in browser and Node.js
+    - Zero dependencies at runtime
+  build_commands:
+    - wasm-pack build --target web --release
+  test_commands:
+    - cargo test
+context:
+  key_files:
+    - src/lib.rs
+    - src/scorer.rs
+    - Cargo.toml
+    - npm-package/package.json
+  architecture: |
+    Rust WASM module compiled with wasm-pack.
+    FAF class exported via wasm-bindgen.
+    Parses YAML content and calculates Mk3 slot-based score.
+metadata:
+  faf_version: 2.8.0
+  author: FAF Foundation
+  license: FAF Foundation License v1.0
+  iana_type: application/vnd.faf+yaml
+  tags:
+    - wasm
+    - webassembly
+    - scoring
+    - ai-context
+    - npm
+    - browser
+    - edge
+projectName: faf-wasm
+projectGoal: FAF WASM SDK - Score .faf files in browser and Node.js (<5ms)
+generated: 2025-11-27T05:18:48.780Z
+stack_signature: typescript-nodejs-javascript
+detected_frameworks:
+  - Node.js
+  - JavaScript
+  - TypeScript
+  - Rust
+turbo_cat_intelligence: 235
+stats:
+  last_auto_time: 0.3
+  times_run: 1

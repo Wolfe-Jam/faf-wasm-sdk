@@ -501,3 +501,296 @@ pub fn score_yaml(yaml_content: &str) -> Result<FafScore, String> {
 
     Ok(FafScore::new(completeness, clarity, structure, metadata))
 }
+
+// =============================================================================
+// CARGO UNIT TESTS - Championship Grade
+// =============================================================================
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // -------------------------------------------------------------------------
+    // WEIGHTS TESTS
+    // -------------------------------------------------------------------------
+
+    #[test]
+    fn test_weights_sum_to_one() {
+        let sum: f64 = WEIGHTS.iter().sum();
+        assert!((sum - 1.0).abs() < 0.001, "Weights must sum to 1.0, got {}", sum);
+    }
+
+    #[test]
+    fn test_weights_are_correct() {
+        assert_eq!(WEIGHTS[0], 0.40, "Completeness weight");
+        assert_eq!(WEIGHTS[1], 0.35, "Clarity weight");
+        assert_eq!(WEIGHTS[2], 0.15, "Structure weight");
+        assert_eq!(WEIGHTS[3], 0.10, "Metadata weight");
+    }
+
+    #[test]
+    fn test_weight_labels() {
+        assert_eq!(WEIGHT_LABELS[0], "Completeness");
+        assert_eq!(WEIGHT_LABELS[1], "Clarity");
+        assert_eq!(WEIGHT_LABELS[2], "Structure");
+        assert_eq!(WEIGHT_LABELS[3], "Metadata");
+    }
+
+    // -------------------------------------------------------------------------
+    // TIER TESTS - Mk3 Compiler Engine
+    // -------------------------------------------------------------------------
+
+    #[test]
+    fn test_tier_trophy() {
+        let score = FafScore::new(100.0, 100.0, 100.0, 100.0);
+        assert_eq!(score.tier(), "🏆");
+    }
+
+    #[test]
+    fn test_tier_gold() {
+        let score = FafScore::new(99.0, 99.0, 99.0, 99.0);
+        assert_eq!(score.tier(), "🥇");
+    }
+
+    #[test]
+    fn test_tier_silver() {
+        let score = FafScore::new(95.0, 95.0, 95.0, 95.0);
+        assert_eq!(score.tier(), "🥈");
+    }
+
+    #[test]
+    fn test_tier_bronze() {
+        let score = FafScore::new(85.0, 85.0, 85.0, 85.0);
+        assert_eq!(score.tier(), "🥉");
+    }
+
+    #[test]
+    fn test_tier_green() {
+        let score = FafScore::new(70.0, 70.0, 70.0, 70.0);
+        assert_eq!(score.tier(), "🟢");
+    }
+
+    #[test]
+    fn test_tier_yellow() {
+        let score = FafScore::new(55.0, 55.0, 55.0, 55.0);
+        assert_eq!(score.tier(), "🟡");
+    }
+
+    #[test]
+    fn test_tier_red() {
+        let score = FafScore::new(50.0, 50.0, 50.0, 50.0);
+        assert_eq!(score.tier(), "🔴");
+    }
+
+    // -------------------------------------------------------------------------
+    // WEIGHTED SCORE TESTS
+    // -------------------------------------------------------------------------
+
+    #[test]
+    fn test_weighted_calculation() {
+        let score = FafScore::new(100.0, 100.0, 100.0, 100.0);
+        let weighted = score.weighted();
+        assert!((weighted - 100.0).abs() < 0.001);
+    }
+
+    #[test]
+    fn test_weighted_with_different_values() {
+        let score = FafScore::new(80.0, 60.0, 40.0, 20.0);
+        // 80*0.40 + 60*0.35 + 40*0.15 + 20*0.10 = 32 + 21 + 6 + 2 = 61
+        let weighted = score.weighted();
+        assert!((weighted - 61.0).abs() < 0.001, "Expected 61.0, got {}", weighted);
+    }
+
+    #[test]
+    fn test_truth_score() {
+        let score = FafScore::new(80.0, 60.0, 40.0, 20.0);
+        // (80 + 60 + 40 + 20) / 4 = 50
+        let truth = score.truth();
+        assert!((truth - 50.0).abs() < 0.001, "Expected 50.0, got {}", truth);
+    }
+
+    // -------------------------------------------------------------------------
+    // LANGUAGE BONUS TESTS
+    // -------------------------------------------------------------------------
+
+    #[test]
+    fn test_rust_bonus() {
+        let score = FafScore::new(80.0, 80.0, 80.0, 80.0);
+        let with_bonus = score.with_bonus("rust");
+        assert_eq!(with_bonus, 95.0, "Rust adds 15% bonus");
+    }
+
+    #[test]
+    fn test_go_bonus() {
+        let score = FafScore::new(80.0, 80.0, 80.0, 80.0);
+        let with_bonus = score.with_bonus("go");
+        assert_eq!(with_bonus, 90.0, "Go adds 10% bonus");
+    }
+
+    #[test]
+    fn test_typescript_bonus() {
+        let score = FafScore::new(80.0, 80.0, 80.0, 80.0);
+        let with_bonus = score.with_bonus("typescript");
+        assert_eq!(with_bonus, 85.0, "TypeScript adds 5% bonus");
+    }
+
+    #[test]
+    fn test_bonus_caps_at_100() {
+        let score = FafScore::new(95.0, 95.0, 95.0, 95.0);
+        let with_bonus = score.with_bonus("rust");
+        assert_eq!(with_bonus, 100.0, "Score should cap at 100");
+    }
+
+    #[test]
+    fn test_no_bonus_for_unknown_language() {
+        let score = FafScore::new(80.0, 80.0, 80.0, 80.0);
+        let with_bonus = score.with_bonus("cobol");
+        assert_eq!(with_bonus, 80.0, "Unknown language gets no bonus");
+    }
+
+    // -------------------------------------------------------------------------
+    // YAML PARSING TESTS
+    // -------------------------------------------------------------------------
+
+    #[test]
+    fn test_parse_minimal_yaml() {
+        let yaml = "project:\n  name: test";
+        let result = score_yaml(yaml);
+        assert!(result.is_ok(), "Should parse minimal YAML");
+    }
+
+    #[test]
+    fn test_parse_invalid_yaml() {
+        let yaml = "invalid: yaml: content: [";
+        let result = score_yaml(yaml);
+        assert!(result.is_err(), "Should reject invalid YAML");
+    }
+
+    #[test]
+    fn test_parse_full_faf() {
+        let yaml = r#"
+project:
+  name: test-project
+  description: A test project
+  stack: rust
+  version: 1.0.0
+  mission: Championship testing
+
+instructions:
+  ai_context:
+    - Test item 1
+    - Test item 2
+
+context:
+  key_files:
+    - src/main.rs
+    - Cargo.toml
+
+metadata:
+  faf_version: "2.8.0"
+  author: wolfejam
+  license: MIT
+"#;
+        let result = score_yaml(yaml);
+        assert!(result.is_ok(), "Should parse full FAF");
+        let score = result.unwrap();
+        assert!(score.weighted() > 0.0, "Should have positive score");
+    }
+
+    // -------------------------------------------------------------------------
+    // MK3 SLOT-BASED SCORING TESTS
+    // -------------------------------------------------------------------------
+
+    #[test]
+    fn test_mk3_empty_yaml() {
+        let yaml = "empty: true";
+        let result = score_yaml_mk3(yaml);
+        assert!(result.is_ok());
+        let mk3 = result.unwrap();
+        assert_eq!(mk3.filled(), 0, "Empty FAF should have 0 filled slots");
+    }
+
+    #[test]
+    fn test_mk3_with_project() {
+        let yaml = r#"
+project:
+  name: test
+  goal: Test goal
+  main_language: rust
+"#;
+        let result = score_yaml_mk3(yaml);
+        assert!(result.is_ok());
+        let mk3 = result.unwrap();
+        assert_eq!(mk3.project_filled, 3, "All 3 project slots filled");
+    }
+
+    #[test]
+    fn test_mk3_tier_calculation() {
+        let yaml = r#"
+project:
+  name: test
+  goal: Test goal
+  main_language: rust
+"#;
+        let result = score_yaml_mk3(yaml);
+        assert!(result.is_ok());
+        let mk3 = result.unwrap();
+        assert!(mk3.score() > 0.0, "Should have positive score");
+    }
+
+    // -------------------------------------------------------------------------
+    // HOT PATH FUNCTION TESTS
+    // -------------------------------------------------------------------------
+
+    #[test]
+    fn test_score_weights_valid() {
+        let weights: [f32; 4] = [0.40, 0.35, 0.15, 0.10];
+        let result = score_weights(&weights, 80.0);
+        assert!((result - 80.0).abs() < 0.01, "All same base should equal base");
+    }
+
+    #[test]
+    fn test_score_weights_invalid_length() {
+        let weights: [f32; 3] = [0.40, 0.35, 0.25];
+        let result = score_weights(&weights, 80.0);
+        assert_eq!(result, 0.0, "Invalid weight count returns 0");
+    }
+
+    #[test]
+    fn test_score_weights_fast() {
+        let weights: [f32; 4] = [0.40, 0.35, 0.15, 0.10];
+        let values: [f32; 4] = [100.0, 100.0, 100.0, 100.0];
+        let result = score_weights_fast(&weights, &values);
+        assert!((result - 100.0).abs() < 0.01);
+    }
+
+    #[test]
+    fn test_weights_f32_constant() {
+        assert_eq!(WEIGHTS_F32[0], 0.40);
+        assert_eq!(WEIGHTS_F32[1], 0.35);
+        assert_eq!(WEIGHTS_F32[2], 0.15);
+        assert_eq!(WEIGHTS_F32[3], 0.10);
+    }
+
+    // -------------------------------------------------------------------------
+    // JSON OUTPUT TESTS
+    // -------------------------------------------------------------------------
+
+    #[test]
+    fn test_json_output() {
+        let score = FafScore::new(80.0, 70.0, 60.0, 50.0);
+        let json = score.to_json();
+        assert!(json.contains("\"completeness\":80"));
+        assert!(json.contains("\"clarity\":70"));
+        assert!(json.contains("\"structure\":60"));
+        assert!(json.contains("\"metadata\":50"));
+    }
+
+    #[test]
+    fn test_display_output() {
+        let score = FafScore::new(80.0, 70.0, 60.0, 50.0);
+        let display = score.display();
+        assert!(display.contains("Truth:"));
+        assert!(display.contains("Weighted:"));
+    }
+}
