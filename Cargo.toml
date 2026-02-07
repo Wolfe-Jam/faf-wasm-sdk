@@ -1,6 +1,6 @@
 [package]
 name = "faf-wasm-sdk"
-version = "1.0.0"
+version = "1.0.1"
 edition = "2021"
 authors = ["wolfejam <wolfejam@faf.one>"]
 description = "FAF WASM SDK - AI context format for browsers and edge compute"
@@ -10,6 +10,10 @@ repository = "https://github.com/faf-foundation/faf-wasm-sdk"
 [lib]
 crate-type = ["cdylib", "rlib"]
 
+[features]
+default = []
+xai = []  # Enable Elon Weights (xAI build only)
+
 [dependencies]
 wasm-bindgen = "0.2"
 serde = { version = "1.0", features = ["derive"] }
@@ -18,6 +22,7 @@ serde_json = "1.0"
 serde-wasm-bindgen = "0.6"
 js-sys = "0.3"
 thiserror = "1.0"
+chrono = { version = "0.4", features = ["wasmbind"] }
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3"

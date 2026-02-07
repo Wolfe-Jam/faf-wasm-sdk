@@ -17,6 +17,7 @@
 
 mod error;
 mod scorer;
+pub mod generator;
 
 use wasm_bindgen::prelude::*;
 use scorer::{FafScore, Mk3Score, score_yaml, score_yaml_mk3};
@@ -65,43 +66,54 @@ impl FAF {
         self.project_stack.clone()
     }
 
-    /// Get weighted AI-readiness score (0-100)
+    // =========================================================================
+    // ELON WEIGHTS (xAI only - compile with --features xai)
+    // =========================================================================
+
+    /// Get weighted AI-readiness score (0-100) - xAI only
+    #[cfg(feature = "xai")]
     #[wasm_bindgen(getter)]
     pub fn weighted_score(&self) -> f64 {
         self.score.weighted()
     }
 
-    /// Get truth score (unweighted, 0-100)
+    /// Get truth score (unweighted, 0-100) - xAI only
+    #[cfg(feature = "xai")]
     #[wasm_bindgen(getter)]
     pub fn truth_score(&self) -> f64 {
         self.score.truth()
     }
 
-    /// Get tier emoji
+    /// Get tier emoji (Elon Weights) - xAI only
+    #[cfg(feature = "xai")]
     #[wasm_bindgen(getter)]
     pub fn tier(&self) -> String {
         self.score.tier()
     }
 
-    /// Get completeness score
+    /// Get completeness score - xAI only
+    #[cfg(feature = "xai")]
     #[wasm_bindgen(getter)]
     pub fn completeness(&self) -> f64 {
         self.score.completeness()
     }
 
-    /// Get clarity score
+    /// Get clarity score - xAI only
+    #[cfg(feature = "xai")]
     #[wasm_bindgen(getter)]
     pub fn clarity(&self) -> f64 {
         self.score.clarity()
     }
 
-    /// Get structure score
+    /// Get structure score - xAI only
+    #[cfg(feature = "xai")]
     #[wasm_bindgen(getter)]
     pub fn structure(&self) -> f64 {
         self.score.structure()
     }
 
-    /// Get metadata score
+    /// Get metadata score - xAI only
+    #[cfg(feature = "xai")]
     #[wasm_bindgen(getter)]
     pub fn metadata(&self) -> f64 {
         self.score.metadata()
@@ -167,7 +179,7 @@ impl FAF {
 
     /// Get version
     pub fn version() -> String {
-        "1.0.0".to_string()
+        "1.0.1".to_string()
     }
 }
 
@@ -241,7 +253,7 @@ pub fn score_faf(yaml_content: String) -> Result<String, JsValue> {
 /// Get SDK version
 #[wasm_bindgen]
 pub fn sdk_version() -> String {
-    "1.0.0".to_string()
+    "1.0.1".to_string()
 }
 
 // =============================================================================
