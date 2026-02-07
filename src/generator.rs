@@ -205,26 +205,45 @@ fn extract_from_readme(
     (default_who, what, why, default_where, when, how)
 }
 
-/// Detect primary tech stack from package.json
-fn detect_stack(dependency_file: Option<&str>, language: Option<&str>) -> String {
+/// Detect primary tech stack from package.json OR readme
+fn detect_stack(dependency_file: Option<&str>, language: Option<&str>, readme: Option<&str>) -> String {
     // First, use language from GitHub API as fallback
     let lang = language.unwrap_or("Unknown");
 
-    // If no dependency file, return language
-    let dep_text = match dependency_file {
-        Some(d) if !d.trim().is_empty() => d,
-        _ => return lang.to_string(),
-    };
-
-    // Language-specific detection
-    match lang {
-        "Python" => detect_python_stack(dep_text),
-        "Rust" => detect_rust_stack(dep_text),
-        "Go" => detect_go_stack(dep_text),
-        "Ruby" => detect_ruby_stack(dep_text),
-        "JavaScript" | "TypeScript" => detect_js_stack(dep_text),
-        _ => lang.to_string(),
+    // If dependency file exists, use it
+    if let Some(dep_text) = dependency_file {
+        if !dep_text.trim().is_empty() {
+            return match lang {
+                "Python" => detect_python_stack(dep_text),
+                "Rust" => detect_rust_stack(dep_text),
+                "Go" => detect_go_stack(dep_text),
+                "Ruby" => detect_ruby_stack(dep_text),
+                "JavaScript" | "TypeScript" => detect_js_stack(dep_text),
+                _ => lang.to_string(),
+            };
+        }
     }
+
+    // If no dependency file but README exists, detect from README
+    if let Some(readme_text) = readme {
+        if !readme_text.trim().is_empty() {
+            let readme_lower = readme_text.to_lowercase();
+
+            // ML/AI frameworks (from README mentions)
+            if readme_lower.contains("jax") || readme_lower.contains("flax") {
+                return "JAX".to_string();
+            }
+            if readme_lower.contains("pytorch") || readme_lower.contains("torch") {
+                return "PyTorch".to_string();
+            }
+            if readme_lower.contains("tensorflow") {
+                return "TensorFlow".to_string();
+            }
+        }
+    }
+
+    // Fall back to language
+    lang.to_string()
 }
 
 /// Detect Python stack from requirements.txt or pyproject.toml
@@ -428,12 +447,13 @@ pub fn generate_faf(
         &owner,
     );
 
-    let stack = detect_stack(dependency_file.as_deref(), language.as_deref());
+    let stack = detect_stack(dependency_file.as_deref(), language.as_deref(), readme.as_deref());
     let version = extract_version(dependency_file.as_deref());
     let goal = description.unwrap_or_else(|| what.clone());
+    let main_language = language.unwrap_or_else(|| "Unknown".to_string());
 
     // Detect project type based on language and stack
-    let project_type = detect_type(language.as_deref(), &stack, dependency_file.as_deref());
+    let project_type = detect_type(Some(&main_language), &stack, dependency_file.as_deref());
 
     // Generate UNIVERSAL template (optimized for better initial scores)
     let faf_content = format!(
@@ -454,7 +474,7 @@ ai_tldr:
 instant_context:
   what_building: {what}
   tech_stack: {stack}
-  main_language: {stack}
+  main_language: {main_language}
   deployment: GitHub
   key_files: []
 
@@ -472,7 +492,7 @@ context_quality:
 project:
   name: {repo_name}
   goal: {goal}
-  main_language: {stack}
+  main_language: {main_language}
   type: {project_type}
   version: {version}
   generated: {now}
