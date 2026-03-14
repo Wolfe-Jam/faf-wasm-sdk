@@ -1,263 +1,163 @@
-//! FAF WASM SDK - AI Context Format for Edge Compute
+//! FAF WASM SDK v2.0.0 — AI Context Format for Edge Compute
+//!
+//! 7 pure-function exports. No classes. JSON in, JSON out.
 //!
 //! # Usage (JavaScript)
 //! ```js
-//! import init, { FAF } from '@faf/wasm-sdk';
+//! import init, { sdk_version, score_faf, validate_faf,
+//!     compile_fafb, decompile_fafb, score_fafb, fafb_info } from '@faf/wasm-sdk';
 //!
 //! await init();
-//! const faf = new FAF(yamlContent);
-//! console.log(faf.weighted_score);  // AI-readiness score
-//! console.log(faf.tier);            // Tier emoji
-//! ```
 //!
-//! # Performance
-//! - Parse: <1ms
-//! - Score: <1ms
-//! - Total: <2ms (sub-10ms globally via edge)
+//! // Score YAML
+//! const result = score_faf(yamlContent);  // JSON string
+//!
+//! // Compile to binary
+//! const bytes = compile_fafb(yamlContent);  // Uint8Array
+//!
+//! // Decompile binary
+//! const json = decompile_fafb(bytes);  // JSON string
+//! ```
 
-mod error;
-mod scorer;
-pub mod generator;
+pub mod mk4;
+pub mod fafb;
 
 use wasm_bindgen::prelude::*;
-use scorer::{FafScore, Mk3Score, score_yaml, score_yaml_mk3};
+use mk4::{Mk4Scorer, LicenseTier};
 
-/// FAF - Main entry point for WASM
-#[wasm_bindgen]
-pub struct FAF {
-    yaml_content: String,
-    score: FafScore,
-    mk3_score: Mk3Score,
-    project_name: Option<String>,
-    project_stack: Option<String>,
-}
-
-#[wasm_bindgen]
-impl FAF {
-    /// Create FAF from YAML content
-    #[wasm_bindgen(constructor)]
-    pub fn new(yaml_content: String) -> Result<FAF, JsValue> {
-        let score = score_yaml(&yaml_content)
-            .map_err(|e| JsValue::from_str(&e))?;
-        let mk3_score = score_yaml_mk3(&yaml_content)
-            .map_err(|e| JsValue::from_str(&e))?;
-
-        // Extract project name and stack from YAML
-        let (project_name, project_stack) = extract_project_info(&yaml_content);
-
-        Ok(FAF {
-            yaml_content,
-            score,
-            mk3_score,
-            project_name,
-            project_stack,
-        })
-    }
-
-    /// Get project name
-    #[wasm_bindgen(getter)]
-    pub fn name(&self) -> Option<String> {
-        self.project_name.clone()
-    }
-
-    /// Get project stack
-    #[wasm_bindgen(getter)]
-    pub fn stack(&self) -> Option<String> {
-        self.project_stack.clone()
-    }
-
-    // =========================================================================
-    // ELON WEIGHTS (xAI only - compile with --features xai)
-    // =========================================================================
-
-    /// Get weighted AI-readiness score (0-100) - xAI only
-    #[cfg(feature = "xai")]
-    #[wasm_bindgen(getter)]
-    pub fn weighted_score(&self) -> f64 {
-        self.score.weighted()
-    }
-
-    /// Get truth score (unweighted, 0-100) - xAI only
-    #[cfg(feature = "xai")]
-    #[wasm_bindgen(getter)]
-    pub fn truth_score(&self) -> f64 {
-        self.score.truth()
-    }
-
-    /// Get tier emoji (Elon Weights) - xAI only
-    #[cfg(feature = "xai")]
-    #[wasm_bindgen(getter)]
-    pub fn tier(&self) -> String {
-        self.score.tier()
-    }
-
-    /// Get completeness score - xAI only
-    #[cfg(feature = "xai")]
-    #[wasm_bindgen(getter)]
-    pub fn completeness(&self) -> f64 {
-        self.score.completeness()
-    }
-
-    /// Get clarity score - xAI only
-    #[cfg(feature = "xai")]
-    #[wasm_bindgen(getter)]
-    pub fn clarity(&self) -> f64 {
-        self.score.clarity()
-    }
-
-    /// Get structure score - xAI only
-    #[cfg(feature = "xai")]
-    #[wasm_bindgen(getter)]
-    pub fn structure(&self) -> f64 {
-        self.score.structure()
-    }
-
-    /// Get metadata score - xAI only
-    #[cfg(feature = "xai")]
-    #[wasm_bindgen(getter)]
-    pub fn metadata(&self) -> f64 {
-        self.score.metadata()
-    }
-
-    // =========================================================================
-    // MK3 SLOT-BASED SCORING (Official FAF Standard)
-    // =========================================================================
-
-    /// Get Mk3 slot-based score (0-100)
-    #[wasm_bindgen(getter)]
-    pub fn mk3_score(&self) -> f64 {
-        self.mk3_score.score()
-    }
-
-    /// Get Mk3 tier emoji
-    #[wasm_bindgen(getter)]
-    pub fn mk3_tier(&self) -> String {
-        self.mk3_score.tier()
-    }
-
-    /// Get Mk3 filled slots count
-    #[wasm_bindgen(getter)]
-    pub fn mk3_filled(&self) -> u32 {
-        self.mk3_score.filled()
-    }
-
-    /// Get Mk3 total slots count
-    #[wasm_bindgen(getter)]
-    pub fn mk3_total(&self) -> u32 {
-        self.mk3_score.total()
-    }
-
-    /// Get Mk3 breakdown string
-    pub fn mk3_breakdown(&self) -> String {
-        self.mk3_score.breakdown()
-    }
-
-    /// Get Mk3 display string
-    pub fn mk3_display(&self) -> String {
-        self.mk3_score.display()
-    }
-
-    /// Get score with language bonus
-    pub fn score_with_bonus(&self, language: &str) -> f64 {
-        self.score.with_bonus(language)
-    }
-
-    /// Get display string
-    pub fn display(&self) -> String {
-        self.score.display()
-    }
-
-    /// Export score as JSON
-    pub fn score_json(&self) -> String {
-        self.score.to_json()
-    }
-
-    /// Validate FAF content (returns true if valid)
-    pub fn validate(yaml_content: String) -> bool {
-        score_yaml(&yaml_content).is_ok()
-    }
-
-    /// Get version
-    pub fn version() -> String {
-        "1.2.0".to_string()
-    }
-}
-
-/// Extract project name and stack from YAML
-fn extract_project_info(yaml_content: &str) -> (Option<String>, Option<String>) {
-    use serde_yaml::Value;
-
-    let doc: Value = match serde_yaml::from_str(yaml_content) {
-        Ok(d) => d,
-        Err(_) => return (None, None),
-    };
-
-    let mut name = None;
-    let mut stack = None;
-
-    if let Value::Mapping(map) = &doc {
-        // Check project.name or top-level name
-        if let Some(project) = map.get(&Value::String("project".to_string())) {
-            if let Value::Mapping(pmap) = project {
-                if let Some(n) = pmap.get(&Value::String("name".to_string())) {
-                    name = n.as_str().map(|s| s.to_string());
-                }
-            }
-        }
-        if name.is_none() {
-            if let Some(n) = map.get(&Value::String("project_name".to_string())) {
-                name = n.as_str().map(|s| s.to_string());
-            }
-        }
-        if name.is_none() {
-            if let Some(n) = map.get(&Value::String("projectName".to_string())) {
-                name = n.as_str().map(|s| s.to_string());
-            }
-        }
-
-        // Check stack.frontend or top-level tech_stack
-        if let Some(s) = map.get(&Value::String("stack".to_string())) {
-            if let Value::Mapping(smap) = s {
-                if let Some(fe) = smap.get(&Value::String("frontend".to_string())) {
-                    stack = fe.as_str().map(|s| s.to_string());
-                }
-            }
-        }
-        if stack.is_none() {
-            if let Some(ts) = map.get(&Value::String("tech_stack".to_string())) {
-                if let Value::Sequence(seq) = ts {
-                    if let Some(first) = seq.first() {
-                        stack = first.as_str().map(|s| s.to_string());
-                    }
-                }
-            }
-        }
-    }
-
-    (name, stack)
-}
-
-/// Standalone validate function
-#[wasm_bindgen]
-pub fn validate_faf(yaml_content: String) -> bool {
-    FAF::validate(yaml_content)
-}
-
-/// Standalone score function - returns JSON
-#[wasm_bindgen]
-pub fn score_faf(yaml_content: String) -> Result<String, JsValue> {
-    let faf = FAF::new(yaml_content)?;
-    Ok(faf.score_json())
-}
+// =============================================================================
+// THE 7 EXPORTS — Pure functions, no classes
+// =============================================================================
 
 /// Get SDK version
 #[wasm_bindgen]
 pub fn sdk_version() -> String {
-    "1.2.0".to_string()
+    "2.0.0".to_string()
+}
+
+/// Score FAF YAML content using Mk4 engine — returns JSON
+#[wasm_bindgen]
+pub fn score_faf(yaml: String) -> Result<String, JsValue> {
+    let scorer = Mk4Scorer::new(LicenseTier::Base);
+    let result = scorer
+        .calculate(&yaml)
+        .map_err(|e| JsValue::from_str(&e))?;
+    Ok(result.to_json())
+}
+
+/// Validate FAF YAML content — returns true if parseable as YAML mapping
+#[wasm_bindgen]
+pub fn validate_faf(yaml: String) -> bool {
+    use serde_yaml::Value;
+    matches!(serde_yaml::from_str::<Value>(&yaml), Ok(Value::Mapping(_)))
+}
+
+/// Compile YAML to FAFb binary — returns Uint8Array
+#[wasm_bindgen]
+pub fn compile_fafb(yaml: String) -> Result<Vec<u8>, JsValue> {
+    fafb::compile_fafb(&yaml).map_err(|e| JsValue::from_str(&e))
+}
+
+/// Decompile FAFb binary to JSON (full content) — returns JSON string
+#[wasm_bindgen]
+pub fn decompile_fafb(bytes: &[u8]) -> Result<String, JsValue> {
+    fafb::decompile_fafb(bytes).map_err(|e| JsValue::from_str(&e))
+}
+
+/// Score a FAFb binary file — returns JSON string
+#[wasm_bindgen]
+pub fn score_fafb(bytes: &[u8]) -> Result<String, JsValue> {
+    fafb::score_fafb(bytes).map_err(|e| JsValue::from_str(&e))
+}
+
+/// Get FAFb file info (header + section metadata, no content) — returns JSON string
+#[wasm_bindgen]
+pub fn fafb_info(bytes: &[u8]) -> Result<String, JsValue> {
+    fafb::fafb_info(bytes).map_err(|e| JsValue::from_str(&e))
 }
 
 // =============================================================================
-// HOT PATH RE-EXPORTS - xAI/Grok Recommended
+// ENTERPRISE SCORING — same 7 pattern, different tier
 // =============================================================================
 
-pub use scorer::{score_weights, score_weights_fast, WEIGHTS_F32};
+/// Score FAF YAML with enterprise (33-slot) tier — returns JSON
+#[wasm_bindgen]
+pub fn score_faf_enterprise(yaml: String) -> Result<String, JsValue> {
+    let scorer = Mk4Scorer::new(LicenseTier::Enterprise);
+    let result = scorer
+        .calculate(&yaml)
+        .map_err(|e| JsValue::from_str(&e))?;
+    Ok(result.to_json())
+}
+
+// =============================================================================
+// INTEGRATION TESTS — Public API surface
+// =============================================================================
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_sdk_version_value() {
+        assert_eq!(sdk_version(), "2.0.0");
+    }
+
+    #[test]
+    fn test_validate_faf_accepts_mapping() {
+        assert!(validate_faf("project:\n  name: test".to_string()));
+    }
+
+    #[test]
+    fn test_validate_faf_rejects_non_mapping() {
+        assert!(!validate_faf("just a string".to_string()));
+        assert!(!validate_faf("- list\n- items".to_string()));
+        assert!(!validate_faf("42".to_string()));
+        assert!(!validate_faf("true".to_string()));
+    }
+
+    #[test]
+    fn test_validate_faf_rejects_broken_yaml() {
+        assert!(!validate_faf("[invalid: yaml: {{{".to_string()));
+    }
+
+    #[test]
+    fn test_score_faf_returns_json_with_score() {
+        let result = score_faf("project:\n  name: test".to_string()).unwrap();
+        assert!(result.contains("\"score\":"));
+        assert!(result.contains("\"tier\":"));
+        assert!(result.contains("\"total\":21"));
+    }
+
+    #[test]
+    fn test_score_faf_enterprise_returns_33_total() {
+        let result = score_faf_enterprise("project:\n  name: test".to_string()).unwrap();
+        assert!(result.contains("\"total\":33"));
+    }
+
+    #[test]
+    fn test_compile_decompile_fafb_roundtrip() {
+        let yaml = "faf_version: \"1.0\"\nproject_name: test\n".to_string();
+        let bytes = compile_fafb(yaml).unwrap();
+        assert_eq!(&bytes[0..4], b"FAFB");
+        let json = decompile_fafb(&bytes).unwrap();
+        assert!(json.contains("\"sections\":"));
+    }
+
+    #[test]
+    fn test_score_fafb_from_compiled() {
+        let yaml = "faf_version: \"1.0\"\nproject_name: test\n".to_string();
+        let bytes = compile_fafb(yaml).unwrap();
+        let score = score_fafb(&bytes).unwrap();
+        assert!(score.contains("\"source\":\"fafb_meta\""));
+    }
+
+    #[test]
+    fn test_fafb_info_from_compiled() {
+        let yaml = "faf_version: \"1.0\"\nproject_name: test\n".to_string();
+        let bytes = compile_fafb(yaml).unwrap();
+        let info = fafb_info(&bytes).unwrap();
+        assert!(info.contains("\"section_count\":"));
+        assert!(!info.contains("\"content\":"));
+    }
+}
