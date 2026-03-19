@@ -1,6 +1,8 @@
 # FAF WASM SDK v2
 
-Compile, score, and inspect [FAF](https://faf.one) context — in any browser, edge runtime, or Node.js process. One WASM binary, 8 exports, ~322KB.
+The compiler is the spec. 322KB of WASM. No server. No API calls. No dependencies.
+
+Compile, score, and inspect [FAF](https://faf.one) context — in any browser, edge runtime, or Node.js process. The same Rust code that runs on the CLI runs in your browser tab, in a Cloudflare Worker, in Node, in Bun. One source of truth. No reimplementation. No drift.
 
 ## v2 — The Definitive Edition
 
@@ -30,7 +32,7 @@ This is a significant upgrade and it's free — the SDK is MIT, the format is an
 ## Installation
 
 ```bash
-npm install @faf/wasm-sdk
+npm install faf-wasm-sdk
 ```
 
 ## API
@@ -47,7 +49,7 @@ import init, {
   decompile_fafb,
   score_fafb,
   fafb_info
-} from '@faf/wasm-sdk';
+} from 'faf-wasm-sdk';
 
 await init();
 ```
