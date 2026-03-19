@@ -1,0 +1,60 @@
+{
+  "birthCertificate": {
+    "born": "2026-03-19T21:05:54.397Z",
+    "birthDNA": 19,
+    "birthDNASource": "legacy",
+    "projectDNA": "64cfd0a86d49b169",
+    "authenticated": false,
+    "certificate": "FAF-2026-XXXX-H2S8"
+  },
+  "versions": [
+    {
+      "version": "v1.0.0",
+      "timestamp": "2026-03-19T21:05:54.397Z",
+      "score": 19,
+      "changes": [
+        "Initial context from CLAUDE.md"
+      ],
+      "approved": false,
+      "growth": 0,
+      "growthRate": 0
+    }
+  ],
+  "current": {
+    "version": "v1.0.0",
+    "score": 19,
+    "approved": false,
+    "lastSync": "2026-03-19T21:05:54.397Z"
+  },
+  "recovery": {
+    "claudeMD": "CLAUDE.md",
+    "lastBackup": "2026-03-19T21:05:54.397Z",
+    "syncStatus": "active",
+    "autoRecover": true
+  },
+  "growth": {
+    "totalGrowth": 0,
+    "daysActive": 0,
+    "averageDailyGrowth": 0,
+    "bestDay": {
+      "date": "2026-03-19T21:05:54.397Z",
+      "growth": 0
+    },
+    "bestWeek": {
+      "start": "2026-03-19T21:05:54.397Z",
+      "growth": 0
+    },
+    "milestones": [
+      {
+        "type": "birth",
+        "score": 19,
+        "date": "2026-03-19T21:05:54.397Z",
+        "version": "v1.0.0",
+        "label": "Birth",
+        "emoji": "🐣"
+      }
+    ]
+  },
+  "lastModified": "2026-03-19T21:05:54.397Z",
+  "format": "faf-dna-v1"
+}
