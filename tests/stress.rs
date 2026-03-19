@@ -177,7 +177,7 @@ stack:
     #[test]
     fn stress_fafb_compile_large_yaml() {
         // 50KB of YAML content
-        let mut yaml = String::from("faf_version: \"1.0\"\nproject_name: stress-test\ntech_stack:\n");
+        let mut yaml = String::from("faf_version: \"1.0\"\nproject:\n  name: stress-test\ntech_stack:\n");
         for i in 0..1000 {
             yaml.push_str(&format!("  - Technology_{}\n", i));
         }
@@ -188,7 +188,7 @@ stack:
 
         // Roundtrip must survive
         let json = fafb::decompile_fafb(&bytes).unwrap();
-        assert!(json.contains("META"));
+        assert!(json.contains("\"name\":\"faf_version\""));
     }
 
     #[test]
@@ -226,10 +226,10 @@ stack:
 
     #[test]
     fn stress_fafb_unicode_project_name() {
-        let yaml = "faf_version: \"1.0\"\nproject_name: \"日本語プロジェクト 🏎️\"";
+        let yaml = "faf_version: \"1.0\"\nproject:\n  name: \"日本語プロジェクト 🏎️\"";
         let bytes = fafb::compile_fafb(yaml).unwrap();
         let json = fafb::decompile_fafb(&bytes).unwrap();
-        assert!(json.contains("META"));
+        assert!(json.contains("\"name\":\"project\""));
     }
 
     #[test]

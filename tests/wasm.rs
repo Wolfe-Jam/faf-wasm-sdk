@@ -168,7 +168,7 @@ tech_stack:
 
         let json = fafb::decompile_fafb(&bytes).unwrap();
         assert!(json.contains("\"sections\":"));
-        assert!(json.contains("META"));
+        assert!(json.contains("\"name\":\"faf_version\""));
     }
 
     #[test]
@@ -187,7 +187,8 @@ tech_stack:
     fn test_score_fafb_returns_meta() {
         let yaml = r#"
 faf_version: "2.5.0"
-project_name: score-test
+project:
+  name: score-test
 "#;
         let bytes = fafb::compile_fafb(yaml).unwrap();
         let score = fafb::score_fafb(&bytes).unwrap();
@@ -202,7 +203,7 @@ project_name: score-test
         let info = fafb::fafb_info(&bytes).unwrap();
 
         assert!(info.contains("\"section_count\":"));
-        assert!(info.contains("\"is_core\":"));
+        assert!(info.contains("\"classification\":"));
         assert!(!info.contains("\"content\":"));
     }
 

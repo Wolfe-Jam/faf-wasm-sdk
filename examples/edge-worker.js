@@ -1,7 +1,7 @@
 // FAF Edge MCP - Cloudflare Worker
 // Deploy: wrangler deploy
 
-import init, { FAF, validate_faf, score_faf } from '../pkg/faf_wasm_sdk.js';
+import init, { validate_faf, score_faf } from '../pkg/faf_wasm_sdk.js';
 
 let initialized = false;
 
