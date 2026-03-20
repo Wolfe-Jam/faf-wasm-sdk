@@ -5,7 +5,13 @@ edition = "2021"
 authors = ["wolfejam <wolfejam@faf.one>"]
 description = "FAF WASM SDK v2 - Mk4 scoring + FAFb binary for browsers and edge compute"
 license = "MIT"
-repository = "https://github.com/faf-foundation/faf-wasm-sdk"
+repository = "https://github.com/Wolfe-Jam/faf-wasm-sdk"
+homepage = "https://faf.one"
+documentation = "https://docs.rs/faf-wasm-sdk"
+readme = "README.md"
+keywords = ["faf", "wasm", "ai-context", "scoring", "fafb"]
+categories = ["wasm", "parsing"]
+exclude = ["target/", ".git/", "*.lock", "pkg/", "pkg-bundler/", "pkg-node/", "npm-package/"]
 
 [lib]
 crate-type = ["cdylib", "rlib"]

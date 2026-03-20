@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>WASM Engine Benchmark | FAF</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 2rem;
+      background: #0a0a0a;
+      color: #e0e0e0;
+    }
+    h1 { color: #00D4D4; font-size: 1.5rem; margin-bottom: 0.5rem; }
+    .subtitle { color: #666; font-size: 0.85rem; margin-bottom: 2rem; }
+    button {
+      background: #00D4D4;
+      color: #0a0a0a;
+      border: none;
+      padding: 12px 32px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 1rem;
+    }
+    button:hover { background: #00ffff; }
+    #output {
+      margin-top: 1.5rem;
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 8px;
+      padding: 1.5rem;
+      white-space: pre;
+      font-size: 13px;
+      line-height: 1.8;
+    }
+    .cyan { color: #00D4D4; }
+    .gold { color: #FFD700; }
+    .orange { color: #FF6B20; }
+    .dim { color: #555; }
+  </style>
+</head>
+<body>
+  <h1>WASM Engine Benchmark</h1>
+  <p class="subtitle">Mk4 Scoring Engine — nanosecond precision</p>
+
+  <button onclick="runBenchmark(10)">Run 10x</button>
+  <button onclick="runBenchmark(100)" style="background:#FF6B20;">Run 100x</button>
+
+  <div id="output"></div>
+
+  <script type="module">
+    import init, { score_faf, validate_faf } from '../pkg/faf_wasm_sdk.js';
+
+    const SAMPLE_FAF = `project:
+  name: benchmark-test
+  description: Performance benchmark for WASM scoring engine
+  stack: typescript
+  version: 2.0.0
+  mission: Prove nanosecond-scale scoring
+  main_language: TypeScript
+  goal: Sub-microsecond AI context scoring
+
+instructions:
+  ai_context:
+    - Follow strict TypeScript patterns
+    - Zero runtime errors
+  build:
+    commands:
+      - npm install
+      - npm run build
+    test: npm test
+
+context:
+  key_files:
+    - src/index.ts
+    - package.json
+  dependencies:
+    - typescript
+    - vitest
+
+metadata:
+  faf_version: "2.8.0"
+  author: wolfejam
+  license: MIT`;
+
+    let ready = false;
+
+    async function initWasm() {
+      await init();
+      ready = true;
+      console.log('%cWASM Engine loaded — ready to benchmark', 'color: #00D4D4;');
+    }
+
+    window.runBenchmark = async function(N = 10) {
+      if (!ready) {
+        await initWasm();
+      }
+
+      const out = document.getElementById('output');
+      const runs = [];
+
+      // Warmup
+      score_faf(SAMPLE_FAF);
+      score_faf(SAMPLE_FAF);
+
+      out.innerHTML = `<span class="dim">Running ${N} consecutive scores...</span>\n\n`;
+
+      for (let i = 0; i < N; i++) {
+        const t0 = performance.now();
+        const result = score_faf(SAMPLE_FAF);
+        const t1 = performance.now();
+        const ms = t1 - t0;
+        const ns = Math.round(ms * 1_000_000);
+        runs.push(ns);
+      }
+
+      // Results
+      let html = '<span class="cyan">WASM Mk4 Scoring Engine — Lab Benchmark</span>\n';
+      html += '<span class="dim">────────────────────────────────────────</span>\n\n';
+
+      for (let i = 0; i < runs.length; i++) {
+        const ns = runs[i];
+        const label = `Run ${String(i + 1).padStart(2, ' ')}:`;
+        html += `<span class="dim">${label}</span> <span class="cyan">${ns.toLocaleString().padStart(10, ' ')} ns</span>\n`;
+      }
+
+      const avg = Math.round(runs.reduce((a, b) => a + b, 0) / runs.length);
+      const min = Math.min(...runs);
+      const max = Math.max(...runs);
+
+      html += '\n<span class="dim">────────────────────────────────────────</span>\n';
+      html += `<span class="dim">   Min:</span> <span class="gold">${min.toLocaleString().padStart(10, ' ')} ns</span>\n`;
+      html += `<span class="dim">   Max:</span> <span class="orange">${max.toLocaleString().padStart(10, ' ')} ns</span>\n`;
+      html += `<span class="dim">   Avg:</span> <span class="cyan">${avg.toLocaleString().padStart(10, ' ')} ns</span>\n`;
+
+      out.innerHTML = html;
+
+      // Console output for screenshot
+      console.log('%cWASM Mk4 Scoring Engine — Lab Benchmark', 'color: #00D4D4; font-weight: bold; font-size: 16px;');
+      console.log('%c────────────────────────────────────────', 'color: #333;');
+      runs.forEach((ns, i) => {
+        console.log(`%cRun ${String(i + 1).padStart(2, ' ')}: %c${ns.toLocaleString()} ns`, 'color: #666;', 'color: #00D4D4; font-weight: bold;');
+      });
+      console.log('%c────────────────────────────────────────', 'color: #333;');
+      console.log(`%cMin: ${min.toLocaleString()} ns  |  Avg: ${avg.toLocaleString()} ns  |  Max: ${max.toLocaleString()} ns`, 'color: #FFD700; font-weight: bold; font-size: 14px;');
+    };
+
+    initWasm();
+  </script>
+</body>
+</html>

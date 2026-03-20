@@ -1,7 +1,7 @@
 {
-  "name": "faf-wasm",
-  "version": "1.0.1",
-  "description": "FAF WASM SDK - Score .faf files in browser and Node.js (<5ms)",
+  "name": "faf-wasm-sdk",
+  "version": "2.0.0",
+  "description": "FAF WASM SDK v2 — Mk4 scoring + FAFb binary for browsers and edge compute",
   "main": "faf_wasm_sdk.js",
   "types": "faf_wasm_sdk.d.ts",
   "files": [
@@ -16,23 +16,22 @@
     "wasm",
     "webassembly",
     "scoring",
+    "fafb",
     "yaml",
-    "project-dna",
     "ai",
     "llm",
     "claude",
     "grok"
   ],
-  "author": "FAF Foundation <team@faf.one>",
-  "license": "SEE LICENSE IN LICENSE",
+  "author": "wolfejam <wolfejam@faf.one>",
+  "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/anthropics/claude-mcp-servers.git",
-    "directory": "packages/faf"
+    "url": "git+https://github.com/Wolfe-Jam/faf-wasm-sdk.git"
   },
   "homepage": "https://faf.one",
   "bugs": {
-    "url": "https://github.com/anthropics/claude-mcp-servers/issues"
+    "url": "https://github.com/Wolfe-Jam/faf-wasm-sdk/issues"
   },
   "engines": {
     "node": ">=16"
