@@ -149,6 +149,8 @@ cargo test
 - **Stress tests** (27) — YAML bombs, Unicode, large payloads, binary fuzzing
 - **WASM integration** (21) — public API surface through wasm-bindgen
 
+If `faf-wasm-sdk` has been useful, consider starring the repo — it helps others find it.
+
 ## License
 
 MIT
