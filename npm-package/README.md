@@ -25,9 +25,9 @@ project:
 `);
 
 console.log(faf.mk3_score);  // 33.3
-console.log(faf.mk3_tier);   // "🔴"
+console.log(faf.mk3_tier);   // "○"  (Red)
 console.log(faf.name);       // "my-project"
-console.log(faf.mk3_display()); // "🔴 33% (3/9 slots)"
+console.log(faf.mk3_display()); // "○ 33% (3/9 slots)"
 ```
 
 ### Node.js (ESM)
@@ -69,16 +69,20 @@ Parse and score a .faf file.
 
 ## Tier System
 
-| Tier | Score | Emoji |
-|------|-------|-------|
+Canonical source: `~/FAF/cli/src/core/tiers.ts`. Score caps at 100%.
+
+| Tier | Score | Symbol |
+|------|-------|--------|
 | Trophy | 100% | 🏆 |
-| Gold | 99%+ | 🥇 |
-| Silver | 95%+ | 🥈 |
-| Bronze | 85%+ | 🥉 |
-| Green | 70%+ | 🟢 |
-| Yellow | 55%+ | 🟡 |
-| Red | <55% | 🔴 |
-| White | 0% | 🤍 |
+| Gold | 99% | ★ |
+| Silver | 95% | ◆ |
+| Bronze | 85% | ◇ |
+| Green | 70% | ● |
+| Yellow | 55% | ● |
+| Red | 1% | ○ |
+| Empty | 0% | ♡ |
+
+🏆 is the ONLY emoji; sub-Trophy tiers use geometric Unicode glyphs (★ ◆ ◇ ● ○ ♡).
 
 ## Performance
 

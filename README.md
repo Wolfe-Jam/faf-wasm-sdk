@@ -62,11 +62,11 @@ await init();
 
 ```javascript
 const result = JSON.parse(score_faf(yamlContent));
-// { score: 71, tier: "🟢", populated: 15, total: 21, ... }
+// { score: 71, tier: "●", populated: 15, total: 21, ... }   // Green
 
 // Enterprise orgs: 33-slot scoring
 const enterprise = JSON.parse(score_faf_enterprise(yamlContent));
-// { score: 45, tier: "🟡", populated: 15, total: 33, ... }
+// { score: 45, tier: "○", populated: 15, total: 33, ... }   // Red
 ```
 
 ### Compile to Binary
@@ -100,15 +100,20 @@ export default {
 
 Mk4 engine — the same scorer that runs in the Rust SDK and CLI. Slot-based: each YAML key is a slot, populated slots are counted, placeholders and empty values are rejected.
 
-| Score | Tier |
-|-------|------|
-| 100% | 🏆 Championship |
-| 99% | 🥇 Gold |
-| 95% | 🥈 Silver |
-| 85% | 🥉 Bronze |
-| 70% | 🟢 Green |
-| 55% | 🟡 Yellow |
-| <55% | 🔴 Red |
+Canonical tier source: `~/FAF/cli/src/core/tiers.ts`. Score caps at 100%.
+
+| Score | Tier | Symbol |
+|-------|------|--------|
+| 100% | Trophy | 🏆 |
+| 99% | Gold | ★ |
+| 95% | Silver | ◆ |
+| 85% | Bronze | ◇ |
+| 70% | Green | ● |
+| 55% | Yellow | ● |
+| 1% | Red | ○ |
+| 0% | Empty | ♡ |
+
+🏆 is the ONLY emoji; sub-Trophy tiers use geometric Unicode glyphs.
 
 **Base** scores against 21 slots. **Enterprise** scores against 33 (adds monorepo, compliance, team structure, and more).
 
