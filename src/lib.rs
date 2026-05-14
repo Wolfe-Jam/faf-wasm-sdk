@@ -32,7 +32,7 @@ use mk4::{Mk4Scorer, LicenseTier};
 /// Get SDK version
 #[wasm_bindgen]
 pub fn sdk_version() -> String {
-    "2.0.0".to_string()
+    "2.1.0".to_string()
 }
 
 /// Score FAF YAML content using Mk4 engine — returns JSON
@@ -100,7 +100,7 @@ mod tests {
 
     #[test]
     fn test_sdk_version_value() {
-        assert_eq!(sdk_version(), "2.0.0");
+        assert_eq!(sdk_version(), "2.1.0");
     }
 
     #[test]

@@ -121,7 +121,9 @@ impl Mk4Scorer {
         })
     }
 
-    /// The Universal DNA Map (33 Slots)
+    /// The Universal DNA Map (33 Slots) — Mk4 canonical names.
+    /// The 6 renamed slots (framework/css/state/api/db/pkg_manager) accept
+    /// their legacy aliases on read; see `legacy_alias_for`.
     fn get_universal_slots(&self) -> Vec<String> {
         let mut slots = vec![
             // Project Meta (3)
@@ -136,15 +138,15 @@ impl Mk4Scorer {
             "human_context.when".to_string(),
             "human_context.how".to_string(),
             // Frontend Stack (4)
-            "stack.frontend".to_string(),
-            "stack.css_framework".to_string(),
+            "stack.framework".to_string(),
+            "stack.css".to_string(),
             "stack.ui_library".to_string(),
-            "stack.state_management".to_string(),
+            "stack.state".to_string(),
             // Backend Stack (5)
             "stack.backend".to_string(),
-            "stack.api_type".to_string(),
+            "stack.api".to_string(),
             "stack.runtime".to_string(),
-            "stack.database".to_string(),
+            "stack.db".to_string(),
             "stack.connection".to_string(),
             // Universal Stack (3)
             "stack.hosting".to_string(),
@@ -156,7 +158,7 @@ impl Mk4Scorer {
             slots.extend(vec![
                 // Enterprise Infra (5)
                 "stack.monorepo_tool".to_string(),
-                "stack.package_manager".to_string(),
+                "stack.pkg_manager".to_string(),
                 "stack.workspaces".to_string(),
                 "monorepo.packages_count".to_string(),
                 "monorepo.build_orchestrator".to_string(),
@@ -175,8 +177,38 @@ impl Mk4Scorer {
         slots
     }
 
-    /// Determine the state of a specific slot
+    /// Legacy alias for a Mk4 canonical slot path.
+    /// Returns `Some(legacy_path)` for the 6 renamed slots, `None` otherwise.
+    /// Used by `get_slot_state` as a backward-compat fallback so existing
+    /// .faf files (with legacy keys) keep scoring correctly.
+    fn legacy_alias_for(canonical: &str) -> Option<&'static str> {
+        match canonical {
+            "stack.framework"   => Some("stack.frontend"),
+            "stack.css"         => Some("stack.css_framework"),
+            "stack.state"       => Some("stack.state_management"),
+            "stack.api"         => Some("stack.api_type"),
+            "stack.db"          => Some("stack.database"),
+            "stack.pkg_manager" => Some("stack.package_manager"),
+            _ => None,
+        }
+    }
+
+    /// Determine the state of a specific slot.
+    /// Tries the canonical path first; falls back to the legacy alias
+    /// (when defined) if the canonical key is absent. Lets .faf files
+    /// containing either legacy or canonical keys score correctly.
     fn get_slot_state(&self, doc: &Value, path: &str) -> SlotState {
+        let state = Self::walk_path_state(doc, path);
+        if matches!(state, SlotState::Empty) {
+            if let Some(legacy) = Self::legacy_alias_for(path) {
+                return Self::walk_path_state(doc, legacy);
+            }
+        }
+        state
+    }
+
+    /// Walk a dotted path in the YAML doc and classify the value's state.
+    fn walk_path_state(doc: &Value, path: &str) -> SlotState {
         let parts: Vec<&str> = path.split('.').collect();
         let mut current = doc;
 
@@ -1016,5 +1048,133 @@ stack:
         assert_eq!(result.populated, 11);
         assert_eq!(result.score, 52);
         assert_eq!(result.tier, "🔴");
+    }
+
+    // -------------------------------------------------------------------------
+    // MK4 CANONICAL RENAME — backward-compat fallback (faf-cli issue #66)
+    // -------------------------------------------------------------------------
+
+    #[test]
+    fn test_canonical_framework_scores_populated() {
+        let yaml = r#"
+project:
+  name: test
+stack:
+  framework: React
+"#;
+        let scorer = Mk4Scorer::new(LicenseTier::Base);
+        let result = scorer.calculate(yaml).unwrap();
+        // project.name + stack.framework = 2 populated
+        assert_eq!(result.populated, 2);
+        // Output key uses canonical name
+        let has_canonical = result.slots.iter().any(|(k, _)| k == "stack.framework");
+        assert!(has_canonical, "expected 'stack.framework' in slot output");
+    }
+
+    #[test]
+    fn test_legacy_frontend_still_scores_populated() {
+        // Pre-Mk4 .faf files (legacy key on disk) must continue to score.
+        let yaml = r#"
+project:
+  name: test
+stack:
+  frontend: React
+"#;
+        let scorer = Mk4Scorer::new(LicenseTier::Base);
+        let result = scorer.calculate(yaml).unwrap();
+        // project.name + stack.frontend (via legacy alias) = 2 populated
+        assert_eq!(result.populated, 2, "legacy 'frontend' must fall back to canonical");
+    }
+
+    #[test]
+    fn test_canonical_wins_when_both_present() {
+        // If a .faf carries BOTH canonical and legacy (during migration),
+        // the canonical key takes precedence — same value semantics either way.
+        let yaml = r#"
+stack:
+  framework: canonical-value
+  frontend: legacy-value
+"#;
+        let scorer = Mk4Scorer::new(LicenseTier::Base);
+        let result = scorer.calculate(yaml).unwrap();
+        // Only counts once (both walk the same slot definition)
+        let framework_state = result.slots.iter()
+            .find(|(k, _)| k == "stack.framework")
+            .map(|(_, s)| *s);
+        assert_eq!(framework_state, Some(SlotState::Populated));
+    }
+
+    #[test]
+    fn test_all_6_canonical_renames_score() {
+        // Verify each of the 6 canonical names scores correctly when populated.
+        let yaml = r#"
+stack:
+  framework: React
+  css: Tailwind
+  state: Redux
+  api: GraphQL
+  db: Postgres
+"#;
+        let scorer = Mk4Scorer::new(LicenseTier::Base);
+        let result = scorer.calculate(yaml).unwrap();
+        // 5 base-tier canonical stack slots populated
+        for canonical in ["stack.framework", "stack.css", "stack.state", "stack.api", "stack.db"] {
+            let state = result.slots.iter()
+                .find(|(k, _)| k == canonical)
+                .map(|(_, s)| *s);
+            assert_eq!(state, Some(SlotState::Populated), "{} should be populated", canonical);
+        }
+    }
+
+    #[test]
+    fn test_all_6_legacy_aliases_still_resolve() {
+        // Same 5 base-tier slots but with legacy names — all must score populated.
+        let yaml = r#"
+stack:
+  frontend: React
+  css_framework: Tailwind
+  state_management: Redux
+  api_type: GraphQL
+  database: Postgres
+"#;
+        let scorer = Mk4Scorer::new(LicenseTier::Base);
+        let result = scorer.calculate(yaml).unwrap();
+        for canonical in ["stack.framework", "stack.css", "stack.state", "stack.api", "stack.db"] {
+            let state = result.slots.iter()
+                .find(|(k, _)| k == canonical)
+                .map(|(_, s)| *s);
+            assert_eq!(state, Some(SlotState::Populated),
+                       "{} should fall back to legacy and be populated", canonical);
+        }
+    }
+
+    #[test]
+    fn test_legacy_pkg_manager_alias_in_enterprise_tier() {
+        // Enterprise-only slot — verify the 6th alias works at the enterprise tier.
+        let yaml = r#"
+stack:
+  package_manager: pnpm
+"#;
+        let scorer = Mk4Scorer::new(LicenseTier::Enterprise);
+        let result = scorer.calculate(yaml).unwrap();
+        let state = result.slots.iter()
+            .find(|(k, _)| k == "stack.pkg_manager")
+            .map(|(_, s)| *s);
+        assert_eq!(state, Some(SlotState::Populated),
+                   "legacy 'package_manager' must fall back at enterprise tier");
+    }
+
+    #[test]
+    fn test_legacy_alias_for_helper() {
+        // Direct unit test on the alias map.
+        assert_eq!(Mk4Scorer::legacy_alias_for("stack.framework"),   Some("stack.frontend"));
+        assert_eq!(Mk4Scorer::legacy_alias_for("stack.css"),         Some("stack.css_framework"));
+        assert_eq!(Mk4Scorer::legacy_alias_for("stack.state"),       Some("stack.state_management"));
+        assert_eq!(Mk4Scorer::legacy_alias_for("stack.api"),         Some("stack.api_type"));
+        assert_eq!(Mk4Scorer::legacy_alias_for("stack.db"),          Some("stack.database"));
+        assert_eq!(Mk4Scorer::legacy_alias_for("stack.pkg_manager"), Some("stack.package_manager"));
+        // Non-renamed slots have no alias
+        assert_eq!(Mk4Scorer::legacy_alias_for("project.name"),      None);
+        assert_eq!(Mk4Scorer::legacy_alias_for("stack.backend"),     None);
     }
 }

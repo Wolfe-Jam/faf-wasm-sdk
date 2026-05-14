@@ -1,6 +1,6 @@
 {
   "name": "faf-wasm-sdk",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "FAF WASM SDK v2 — Mk4 scoring + FAFb binary for browsers and edge compute",
   "main": "faf_wasm_sdk.js",
   "types": "faf_wasm_sdk.d.ts",
