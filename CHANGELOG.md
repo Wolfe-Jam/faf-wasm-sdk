@@ -1,5 +1,17 @@
 # Changelog
 
+## v2.1.0 — Mk4 canonical slot names (2026-05-14)
+
+- Rename 6 stack slot identifiers to their Mk4 canonical names, with a
+  backward-compat alias fallback so existing `.faf` files (legacy keys) keep
+  scoring correctly (faf-cli #66 Phase B):
+  - `stack.frontend` → `stack.framework`
+  - `stack.css_framework` → `stack.css`
+  - `stack.state_management` → `stack.state`
+  - `stack.api_type` → `stack.api`
+  - `stack.database` → `stack.db`
+  - `stack.package_manager` → `stack.pkg_manager`
+
 ## v2.0.0 — The Definitive Edition (2026-03-19)
 
 - **String table** — every YAML key becomes a named binary section (up to 256)

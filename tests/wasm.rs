@@ -22,7 +22,8 @@ mod tests {
 
     #[test]
     fn test_sdk_version() {
-        assert_eq!(sdk_version(), "2.0.0");
+        // Track the crate version automatically so a version bump can't rot this test.
+        assert_eq!(sdk_version(), env!("CARGO_PKG_VERSION"));
     }
 
     // =========================================================================

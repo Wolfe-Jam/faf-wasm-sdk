@@ -1,53 +1,50 @@
 faf_version: 2.5.0
-ai_score: 100%
 project:
   name: faf-wasm-sdk
-  goal: WASM scoring kernel for FAF — Mk4 engine + FAFb binary compile/decompile in 322KB
+  goal: The compiler is the spec. 322KB of WASM. No server. No API calls. No dependencies.
   main_language: Rust
-  version: 2.0.0
-  type: library
-  license: MIT
-instant_context:
-  what_building: WebAssembly SDK that runs the same Rust scoring and binary format code in browsers, edge runtimes, and Node.js
-  tech_stack: Rust, wasm-bindgen, wasm-pack, serde, faf-rust-sdk
-  deployment: npm (faf-wasm-sdk)
-  key_files:
-    - src/lib.rs
-    - src/mk4.rs
-    - src/fafb.rs
-  commands:
-    test: cargo test
-    build: wasm-pack build --target web --release
-    publish: "wasm-pack publish (via pkg/)"
-    doc: cargo doc --open
+  type: sdk
 stack:
-  backend: Rust 2021 Edition (compiled to WASM)
-  build_tool: wasm-pack + Cargo
-  testing: cargo test (138 tests)
-  runtime: Browser, Cloudflare Workers, Node.js, Bun, Deno
-context_quality:
-  slots_filled: 21/21
-  confidence: high
-  handoff_ready: true
+  frontend: slotignored
+  css_framework: slotignored
+  ui_library: slotignored
+  state_management: slotignored
+  backend: slotignored
+  api_type: slotignored
+  runtime: slotignored
+  database: slotignored
+  connection: slotignored
+  hosting: npm
+  build: wasm-pack
+  cicd: GitHub Actions
+  monorepo_tool: slotignored
+  package_manager: slotignored
+  workspaces: slotignored
+  admin: slotignored
+  cache: slotignored
+  search: slotignored
+  storage: slotignored
 human_context:
   who: wolfejam
   what: WASM scoring kernel — the GCC of project DNA
-  why: One source of truth — same Rust code scores in CLI, browser, edge, and Node. No reimplementation. No drift.
-  how: Rust compiled to WASM via wasm-pack, 8 pure-function exports, JSON in/out
-  where: npm (faf-wasm-sdk), embedded in builder.faf.one, Cloudflare Workers
-  when: November 2025 (v1), March 2026 (v2 Definitive Edition)
-state:
-  phase: production
-  version: 2.0.0
-  focus: "Triangle of Trust — .faf → .fafb → score, all through this WASM kernel"
-tags:
-  - wasm
-  - webassembly
-  - rust
-  - scoring
-  - fafb
-  - ai-context
-  - iana-registered
-metadata:
-  last_claude_sync: "2026-03-20"
-  bi_sync: active
+  why: One source of truth — same Rust code scores in CLI, browser, edge, and Node. No reimplementation, no drift.
+  where: npm (faf-wasm-sdk), embedded in builder.faf.one + Cloudflare Workers
+  when: Nov 2025 (v1), Mar 2026 (v2 Definitive)
+  how: Rust compiled to WASM via wasm-pack; 8 pure-function exports, JSON in/out
+monorepo:
+  packages_count: slotignored
+  build_orchestrator: slotignored
+  versioning_strategy: slotignored
+  shared_configs: slotignored
+  remote_cache: slotignored
+tech_stack:
+  - Rust
+key_files:
+  - Cargo.toml
+  - src/lib.rs
+  - README.md
+  - wrangler.toml
+commands:
+  build: cargo build --release
+  test: cargo test
+  lint: cargo clippy
