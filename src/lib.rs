@@ -19,11 +19,11 @@
 //! const json = decompile_fafb(bytes);  // JSON string
 //! ```
 
-pub mod mk4;
 pub mod fafb;
+pub mod mk4;
 
+use mk4::{LicenseTier, Mk4Scorer};
 use wasm_bindgen::prelude::*;
-use mk4::{Mk4Scorer, LicenseTier};
 
 // =============================================================================
 // THE 7 EXPORTS — Pure functions, no classes
@@ -39,9 +39,7 @@ pub fn sdk_version() -> String {
 #[wasm_bindgen]
 pub fn score_faf(yaml: String) -> Result<String, JsValue> {
     let scorer = Mk4Scorer::new(LicenseTier::Base);
-    let result = scorer
-        .calculate(&yaml)
-        .map_err(|e| JsValue::from_str(&e))?;
+    let result = scorer.calculate(&yaml).map_err(|e| JsValue::from_str(&e))?;
     Ok(result.to_json())
 }
 
@@ -84,9 +82,7 @@ pub fn fafb_info(bytes: &[u8]) -> Result<String, JsValue> {
 #[wasm_bindgen]
 pub fn score_faf_enterprise(yaml: String) -> Result<String, JsValue> {
     let scorer = Mk4Scorer::new(LicenseTier::Enterprise);
-    let result = scorer
-        .calculate(&yaml)
-        .map_err(|e| JsValue::from_str(&e))?;
+    let result = scorer.calculate(&yaml).map_err(|e| JsValue::from_str(&e))?;
     Ok(result.to_json())
 }
 

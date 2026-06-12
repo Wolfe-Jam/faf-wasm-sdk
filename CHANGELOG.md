@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- crates.io Trusted Publishing (OIDC) workflow (`publish-crate.yml`) — publishes
+  on GitHub release via `rust-lang/crates-io-auth-action`, no long-lived token
+- Weekly `cargo audit` security workflow (`audit.yml`) — RustSec advisories on
+  push to Cargo.toml/Cargo.lock, weekly schedule, and manual dispatch
+
+### Changed
+- Rust edition 2021 → 2024; declared `rust-version = "1.85"` (MSRV)
+- `cargo fmt` applied for the 2024 style edition (formatting only, no logic
+  changes)
+- wasm-bindgen 0.2.105 → 0.2.123 and wasm-bindgen-test 0.3.55 → 0.3.73
+  (lockfile-only; manifest stays caret `0.2`)
+
 ## v2.1.0 — Mk4 canonical slot names (2026-05-14)
 
 - Rename 6 stack slot identifiers to their Mk4 canonical names, with a
