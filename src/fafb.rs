@@ -3,13 +3,13 @@
 //! Provides compile/decompile/info/score functions that accept and return
 //! strings (YAML/JSON/base64) for clean WASM interop.
 
-use faf_rust_sdk::binary::{
-    compile, decompile, CompileOptions, DecompiledFafb,
-};
+use faf_rust_sdk::binary::{CompileOptions, DecompiledFafb, compile, decompile};
 
 /// Compile YAML source to FAFb binary bytes (WASM-safe: no SystemTime)
 pub fn compile_fafb(yaml: &str) -> Result<Vec<u8>, String> {
-    let opts = CompileOptions { use_timestamp: false };
+    let opts = CompileOptions {
+        use_timestamp: false,
+    };
     compile(yaml, &opts)
 }
 
@@ -64,9 +64,7 @@ fn decompiled_to_json(result: &DecompiledFafb) -> String {
         if i > 0 {
             json.push(',');
         }
-        let content = result
-            .section_string(entry)
-            .unwrap_or_default();
+        let content = result.section_string(entry).unwrap_or_default();
         let escaped = escape_json_string(&content);
         let name = result.section_name(entry);
         json.push_str(&format!(
@@ -162,7 +160,10 @@ fn extract_score_from_meta(project_yaml: &str, faf_version: &str) -> String {
     }
 
     if !faf_version.is_empty() {
-        json.push_str(&format!(",\"faf_version\":\"{}\"", escape_json_string(faf_version)));
+        json.push_str(&format!(
+            ",\"faf_version\":\"{}\"",
+            escape_json_string(faf_version)
+        ));
     }
 
     json.push('}');

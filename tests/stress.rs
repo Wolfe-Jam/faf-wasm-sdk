@@ -7,8 +7,8 @@
 
 #[cfg(test)]
 mod stress {
-    use faf_wasm_sdk::mk4::{Mk4Scorer, LicenseTier};
     use faf_wasm_sdk::fafb;
+    use faf_wasm_sdk::mk4::{LicenseTier, Mk4Scorer};
     use faf_wasm_sdk::validate_faf;
 
     // =========================================================================
@@ -49,7 +49,10 @@ mod stress {
     fn stress_very_long_slot_value() {
         // 100KB string in a slot value
         let long_value: String = "a".repeat(100_000);
-        let yaml = format!("project:\n  name: {}\n  goal: Real goal\n  main_language: Rust", long_value);
+        let yaml = format!(
+            "project:\n  name: {}\n  goal: Real goal\n  main_language: Rust",
+            long_value
+        );
         let scorer = Mk4Scorer::new(LicenseTier::Base);
         let result = scorer.calculate(&yaml).unwrap();
         assert_eq!(result.populated, 3); // long string is still populated
@@ -177,7 +180,8 @@ stack:
     #[test]
     fn stress_fafb_compile_large_yaml() {
         // 50KB of YAML content
-        let mut yaml = String::from("faf_version: \"1.0\"\nproject:\n  name: stress-test\ntech_stack:\n");
+        let mut yaml =
+            String::from("faf_version: \"1.0\"\nproject:\n  name: stress-test\ntech_stack:\n");
         for i in 0..1000 {
             yaml.push_str(&format!("  - Technology_{}\n", i));
         }
@@ -315,7 +319,9 @@ project:
   main_language: Rust
 "#;
         let base = Mk4Scorer::new(LicenseTier::Base).calculate(yaml).unwrap();
-        let enterprise = Mk4Scorer::new(LicenseTier::Enterprise).calculate(yaml).unwrap();
+        let enterprise = Mk4Scorer::new(LicenseTier::Enterprise)
+            .calculate(yaml)
+            .unwrap();
         // 3/21 > 3/33
         assert!(base.score > enterprise.score);
         assert_eq!(base.populated, enterprise.populated);

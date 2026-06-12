@@ -43,7 +43,9 @@ impl Mk4Result {
     pub fn to_json(&self) -> String {
         let mut slots_json = String::from("{");
         for (i, (name, state)) in self.slots.iter().enumerate() {
-            if i > 0 { slots_json.push(','); }
+            if i > 0 {
+                slots_json.push(',');
+            }
             let state_str = match state {
                 SlotState::Populated => "populated",
                 SlotState::Empty => "empty",
@@ -80,8 +82,8 @@ impl Mk4Scorer {
 
     /// Calculate the official FAF score from YAML content
     pub fn calculate(&self, yaml: &str) -> Result<Mk4Result, String> {
-        let doc: Value = serde_yaml::from_str(yaml)
-            .map_err(|e| format!("YAML parse error: {}", e))?;
+        let doc: Value =
+            serde_yaml::from_str(yaml).map_err(|e| format!("YAML parse error: {}", e))?;
 
         let mut populated: u32 = 0;
         let mut ignored: u32 = 0;
@@ -99,7 +101,11 @@ impl Mk4Scorer {
             slots.push((slot_path.clone(), state));
         }
 
-        let total_slots: u32 = if self.tier == LicenseTier::Enterprise { 33 } else { 21 };
+        let total_slots: u32 = if self.tier == LicenseTier::Enterprise {
+            33
+        } else {
+            21
+        };
         let active_slots = total_slots - ignored;
 
         let score = if active_slots == 0 {
@@ -183,11 +189,11 @@ impl Mk4Scorer {
     /// .faf files (with legacy keys) keep scoring correctly.
     fn legacy_alias_for(canonical: &str) -> Option<&'static str> {
         match canonical {
-            "stack.framework"   => Some("stack.frontend"),
-            "stack.css"         => Some("stack.css_framework"),
-            "stack.state"       => Some("stack.state_management"),
-            "stack.api"         => Some("stack.api_type"),
-            "stack.db"          => Some("stack.database"),
+            "stack.framework" => Some("stack.frontend"),
+            "stack.css" => Some("stack.css_framework"),
+            "stack.state" => Some("stack.state_management"),
+            "stack.api" => Some("stack.api_type"),
+            "stack.db" => Some("stack.database"),
             "stack.pkg_manager" => Some("stack.package_manager"),
             _ => None,
         }
@@ -269,13 +275,21 @@ fn is_valid_populated_string(s: &str) -> bool {
 
 /// Mk4 official tier calculation — same tiers as all FAF engines
 fn score_to_tier(score: u32) -> String {
-    if score >= 100 { "🏆".to_string() }
-    else if score >= 99 { "🥇".to_string() }
-    else if score >= 95 { "🥈".to_string() }
-    else if score >= 85 { "🥉".to_string() }
-    else if score >= 70 { "🟢".to_string() }
-    else if score >= 55 { "🟡".to_string() }
-    else { "🔴".to_string() }
+    if score >= 100 {
+        "🏆".to_string()
+    } else if score >= 99 {
+        "🥇".to_string()
+    } else if score >= 95 {
+        "🥈".to_string()
+    } else if score >= 85 {
+        "🥉".to_string()
+    } else if score >= 70 {
+        "🟢".to_string()
+    } else if score >= 55 {
+        "🟡".to_string()
+    } else {
+        "🔴".to_string()
+    }
 }
 
 // =============================================================================
@@ -429,7 +443,11 @@ human_context:
         // so test the math directly
         let active = 0u32;
         let populated = 0u32;
-        let score = if active == 0 { 0.0 } else { (populated as f64 / active as f64) * 100.0 };
+        let score = if active == 0 {
+            0.0
+        } else {
+            (populated as f64 / active as f64) * 100.0
+        };
         assert_eq!(score, 0.0);
     }
 
@@ -690,7 +708,11 @@ project:
         let base = Mk4Scorer::new(LicenseTier::Base).get_universal_slots();
         let enterprise = Mk4Scorer::new(LicenseTier::Enterprise).get_universal_slots();
         for slot in &base {
-            assert!(enterprise.contains(slot), "Base slot {} missing from enterprise", slot);
+            assert!(
+                enterprise.contains(slot),
+                "Base slot {} missing from enterprise",
+                slot
+            );
         }
     }
 
@@ -1083,7 +1105,10 @@ stack:
         let scorer = Mk4Scorer::new(LicenseTier::Base);
         let result = scorer.calculate(yaml).unwrap();
         // project.name + stack.frontend (via legacy alias) = 2 populated
-        assert_eq!(result.populated, 2, "legacy 'frontend' must fall back to canonical");
+        assert_eq!(
+            result.populated, 2,
+            "legacy 'frontend' must fall back to canonical"
+        );
     }
 
     #[test]
@@ -1098,7 +1123,9 @@ stack:
         let scorer = Mk4Scorer::new(LicenseTier::Base);
         let result = scorer.calculate(yaml).unwrap();
         // Only counts once (both walk the same slot definition)
-        let framework_state = result.slots.iter()
+        let framework_state = result
+            .slots
+            .iter()
             .find(|(k, _)| k == "stack.framework")
             .map(|(_, s)| *s);
         assert_eq!(framework_state, Some(SlotState::Populated));
@@ -1118,11 +1145,24 @@ stack:
         let scorer = Mk4Scorer::new(LicenseTier::Base);
         let result = scorer.calculate(yaml).unwrap();
         // 5 base-tier canonical stack slots populated
-        for canonical in ["stack.framework", "stack.css", "stack.state", "stack.api", "stack.db"] {
-            let state = result.slots.iter()
+        for canonical in [
+            "stack.framework",
+            "stack.css",
+            "stack.state",
+            "stack.api",
+            "stack.db",
+        ] {
+            let state = result
+                .slots
+                .iter()
                 .find(|(k, _)| k == canonical)
                 .map(|(_, s)| *s);
-            assert_eq!(state, Some(SlotState::Populated), "{} should be populated", canonical);
+            assert_eq!(
+                state,
+                Some(SlotState::Populated),
+                "{} should be populated",
+                canonical
+            );
         }
     }
 
@@ -1139,12 +1179,24 @@ stack:
 "#;
         let scorer = Mk4Scorer::new(LicenseTier::Base);
         let result = scorer.calculate(yaml).unwrap();
-        for canonical in ["stack.framework", "stack.css", "stack.state", "stack.api", "stack.db"] {
-            let state = result.slots.iter()
+        for canonical in [
+            "stack.framework",
+            "stack.css",
+            "stack.state",
+            "stack.api",
+            "stack.db",
+        ] {
+            let state = result
+                .slots
+                .iter()
                 .find(|(k, _)| k == canonical)
                 .map(|(_, s)| *s);
-            assert_eq!(state, Some(SlotState::Populated),
-                       "{} should fall back to legacy and be populated", canonical);
+            assert_eq!(
+                state,
+                Some(SlotState::Populated),
+                "{} should fall back to legacy and be populated",
+                canonical
+            );
         }
     }
 
@@ -1157,24 +1209,47 @@ stack:
 "#;
         let scorer = Mk4Scorer::new(LicenseTier::Enterprise);
         let result = scorer.calculate(yaml).unwrap();
-        let state = result.slots.iter()
+        let state = result
+            .slots
+            .iter()
             .find(|(k, _)| k == "stack.pkg_manager")
             .map(|(_, s)| *s);
-        assert_eq!(state, Some(SlotState::Populated),
-                   "legacy 'package_manager' must fall back at enterprise tier");
+        assert_eq!(
+            state,
+            Some(SlotState::Populated),
+            "legacy 'package_manager' must fall back at enterprise tier"
+        );
     }
 
     #[test]
     fn test_legacy_alias_for_helper() {
         // Direct unit test on the alias map.
-        assert_eq!(Mk4Scorer::legacy_alias_for("stack.framework"),   Some("stack.frontend"));
-        assert_eq!(Mk4Scorer::legacy_alias_for("stack.css"),         Some("stack.css_framework"));
-        assert_eq!(Mk4Scorer::legacy_alias_for("stack.state"),       Some("stack.state_management"));
-        assert_eq!(Mk4Scorer::legacy_alias_for("stack.api"),         Some("stack.api_type"));
-        assert_eq!(Mk4Scorer::legacy_alias_for("stack.db"),          Some("stack.database"));
-        assert_eq!(Mk4Scorer::legacy_alias_for("stack.pkg_manager"), Some("stack.package_manager"));
+        assert_eq!(
+            Mk4Scorer::legacy_alias_for("stack.framework"),
+            Some("stack.frontend")
+        );
+        assert_eq!(
+            Mk4Scorer::legacy_alias_for("stack.css"),
+            Some("stack.css_framework")
+        );
+        assert_eq!(
+            Mk4Scorer::legacy_alias_for("stack.state"),
+            Some("stack.state_management")
+        );
+        assert_eq!(
+            Mk4Scorer::legacy_alias_for("stack.api"),
+            Some("stack.api_type")
+        );
+        assert_eq!(
+            Mk4Scorer::legacy_alias_for("stack.db"),
+            Some("stack.database")
+        );
+        assert_eq!(
+            Mk4Scorer::legacy_alias_for("stack.pkg_manager"),
+            Some("stack.package_manager")
+        );
         // Non-renamed slots have no alias
-        assert_eq!(Mk4Scorer::legacy_alias_for("project.name"),      None);
-        assert_eq!(Mk4Scorer::legacy_alias_for("stack.backend"),     None);
+        assert_eq!(Mk4Scorer::legacy_alias_for("project.name"), None);
+        assert_eq!(Mk4Scorer::legacy_alias_for("stack.backend"), None);
     }
 }

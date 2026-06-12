@@ -13,8 +13,8 @@ mod tests {
     use faf_wasm_sdk::validate_faf;
 
     // These modules are pub, so we can test their inner functions directly
-    use faf_wasm_sdk::mk4::{Mk4Scorer, LicenseTier};
     use faf_wasm_sdk::fafb;
+    use faf_wasm_sdk::mk4::{LicenseTier, Mk4Scorer};
 
     // =========================================================================
     // SDK VERSION
