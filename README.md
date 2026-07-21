@@ -4,6 +4,8 @@
 
 **FAF defines. MD instructs. AI codes.**
 
+⭐ **A star helps other devs discover faf-wasm-sdk** — despite the downloads, ~3 of 4 devs check stars first.
+
 The compiler is the spec. 322KB of WASM. No server. No API calls. No dependencies.
 
 Compile, score, and inspect [FAF](https://faf.one) context — in any browser, edge runtime, or Node.js process. The same Rust code that runs on the CLI runs in your browser tab, in a Cloudflare Worker, in Node, in Bun. One source of truth. No reimplementation. No drift.
