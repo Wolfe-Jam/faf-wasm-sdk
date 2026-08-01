@@ -183,7 +183,7 @@ MIT
 - [IANA Registration](https://www.iana.org/assignments/media-types/application/vnd.faf+yaml) — `application/vnd.faf+yaml`
 - [FAF on Zenodo](https://doi.org/10.5281/zenodo.18251362) — academic paper (DOI 10.5281/zenodo.18251362)
 - [FAF on Grokipedia](https://grokipedia.com/page/faf-file-format) — 28 citations
-- [faf-rust-sdk](https://github.com/Wolfe-Jam/faf-rust-sdk) — canonical Rust implementation
+- [faf-rust monorepo](https://github.com/Wolfe-Jam/faf-rust) — live foundation (faf-kernel · faf-fafb · faf-rust-sdk 3.x · faf-wasm-sdk 3.x)
 
 ---
 
