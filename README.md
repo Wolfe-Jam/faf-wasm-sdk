@@ -1,4 +1,15 @@
-# FAF WASM SDK v2
+# faf-wasm-sdk (historical tree)
+
+> **Publish source of truth has moved.**  
+> Live crates.io **`faf-wasm-sdk` 3.x** is the WASM shell over `faf-kernel` + `faf-fafb`, developed and released from:  
+> **[github.com/Wolfe-Jam/faf-rust](https://github.com/Wolfe-Jam/faf-rust)** · map: [CRATE-SUPERSESSION.md](https://github.com/Wolfe-Jam/faf-rust/blob/main/docs/CRATE-SUPERSESSION.md)  
+>  
+> This repository is a **historical monorepo** (v2-era). Do **not** publish from here.  
+> Install from crates.io **3.x** · Owner: FAF format steward (namespace reserved intentionally).
+
+---
+
+# FAF WASM SDK v2 (archive readme)
 
 **Persistent Project Context for the browser. WASM scoring kernel.**
 
